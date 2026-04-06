@@ -27,10 +27,8 @@ Konfiguracja parametrów - zmienne środowiskowe
           environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            
       Docker - przez flagę -e
-         docker run -d -p 8000:8000 -e REDIS_HOST=localhost ml-api
-      
+         docker run -d -p 8000:8000 -e REDIS_HOST=localhost ml-api    
       Docker Compose - w sekcji enviromment w pliku docker-compose.yml
 
 Wymagane zasoby:
