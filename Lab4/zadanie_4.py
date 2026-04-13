@@ -2,8 +2,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import os
 
 app = FastAPI()
+
+# odczyt zmiennych środowiskowych
+API_KEY = os.getenv("API_KEY", "brak-klucza")
+APP_ENV = os.getenv("APP_ENV", "development")
+
 X = np.array([[10], [20], [30], [40], [50]])
 y = np.array([21, 41, 61, 81, 101])
 
@@ -28,9 +34,17 @@ def get_model_info():
         "n_features_in": model.n_features_in_,
         "coefficients": model.coef_.tolist(),
         "intercept": float(model.intercept_),
-        "decsription": "Model regresji liniowej przewidujący y = 2x + 1"
+        "description": "Model regresji liniowej przewidujący y = 2x + 1"
     }
 
+# endpoint pokazujący zmienne środowiskowe
+@app.get("/config")
+def get_config():
+    return {
+        "environment": APP_ENV,
+        "api_key_set": API_KEY != "brak-klucza",
+        "api_key_preview": f"{API_KEY[:4]}****" if len(API_KEY) > 4 else "brak-klucza"
+    }
 
 @app.post("/predict")
 def predict(request: PredictRequest):
@@ -43,11 +57,8 @@ def predict(request: PredictRequest):
         prediction = model.predict([[request.feature]])
         return {
             "input": request.feature,
-            "prediction": float(prediction[0])
+            "prediction": float(prediction[0]),
+            "environment": APP_ENV
         }
     except Exception as e:
-        raise HTTPException(status_code=500,
-        detail=f"Błąd modelu: {str(e)}")
-
-    # irm "http://127.0.0.1:8000/health"
-    # irm "http://127.0.0.1:8000/info"
+        raise HTTPException(status_code=500, detail=f"Błąd modelu: {str(e)}")
